@@ -10,6 +10,7 @@ Flask = "^2.0.3"
 Flask-SQLAlchemy = "^2.5.1"
 Flask-Migrate = "^3.1.0"
 psycopg2 = "^2.9.3"
+marshmallow-dataclass = "^8.5.3"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"

@@ -26,6 +26,6 @@ class Character(db.Model):
     species = db.Column(db.String, nullable=False)
     type = db.Column(db.String, nullable=False)
     gender = db.Column(db.String, nullable=False)
-    episodes = db.relationship(
+    episode = db.relationship(
         "Episode", secondary=association_table, back_populates="characters"
     )
