@@ -7,4 +7,7 @@ def register_commands(app: Flask):
     @click.argument("episodes")
     @click.argument("characters")
     def csv_import(episodes: str, characters: str):
+        """
+        Import initial CSV files to the DB.
+        """
         click.secho("imported")
