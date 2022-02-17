@@ -6,8 +6,14 @@ authors = ["Remi Paulmier <remi.paulmier@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
+Flask = "^2.0.3"
+Flask-SQLAlchemy = "^2.5.1"
+Flask-Migrate = "^3.1.0"
 
 [tool.poetry.dev-dependencies]
+black = "^22.1.0"
+pytest = "^7.0.1"
+mypy = "^0.931"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
