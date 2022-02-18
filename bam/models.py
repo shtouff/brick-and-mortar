@@ -37,8 +37,28 @@ class Comment(db.Model):
     __tablename__ = "comment"
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
-    comment = db.Column(db.String, nullable=False)
+    comment = db.Column(db.Text, nullable=False)
     episode_id = db.Column(db.Integer, db.ForeignKey("episode.id"))
     episode = db.relationship("Episode")
     character_id = db.Column(db.Integer, db.ForeignKey("character.id"))
     character = db.relationship("Character")
+
+
+class UserAccount(db.Model):
+    __tablename__ = "useraccount"
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String, nullable=False, unique=True)
+    password = db.Column(db.String, nullable=False)
+    role = db.Column(db.String, nullable=False)
+
+
+class RevokedToken(db.Model):
+    """
+    This would be better to use another backend, like redis, to store those. They would benefit from auto expiration
+    with TTL.
+    For commodity, I choose not to deploy a redis instance in this example, so this table would need a cleanup job.
+    """
+
+    __tablename__ = "revoked"
+    id = db.Column(db.Integer, primary_key=True)
+    jti = db.Column(db.String, nullable=False, unique=True)

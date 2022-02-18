@@ -1,3 +1,4 @@
+import enum
 from dataclasses import dataclass, field
 from datetime import datetime, date
 from typing import List, Optional
@@ -47,3 +48,17 @@ class Comment:
 class CommentForUpdate:
     title: Optional[str] = None
     comment: Optional[str] = None
+
+
+class Role(enum.Enum):
+    ADMIN = "ADMIN"
+    USER = "USER"
+    EDITOR = "EDITOR"
+
+
+@dataclass
+class UserAccount:
+    username: str
+    password: str
+    role: Role
+    id: Optional[int] = None

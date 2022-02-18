@@ -22,7 +22,7 @@ def upgrade():
         "comment",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("title", sa.String(), nullable=False),
-        sa.Column("comment", sa.String(), nullable=False),
+        sa.Column("comment", sa.Text(), nullable=False),
         sa.Column("episode_id", sa.Integer(), nullable=True),
         sa.Column("character_id", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(

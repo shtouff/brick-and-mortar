@@ -6,7 +6,7 @@ import click
 from flask import Flask
 from marshmallow_dataclass import class_schema
 
-from bam import types, models
+from bam import types, models, auth
 from bam.extensions import db
 
 
@@ -69,3 +69,30 @@ def register_commands(app: Flask):
             for dao in values:
                 db.session.add(dao)
         db.session.commit()
+
+        click.secho(
+            f"imported {len(episodes)} episodes and {len(characters)} characters successfully.",
+            fg="green",
+        )
+
+    @app.cli.command("create-admin")
+    @click.argument("username")
+    @click.argument("password")
+    def create_admin(username: str, password: str):
+        """
+        Create the initial admin account, using given password
+        """
+
+        admin = models.UserAccount.query.filter_by(role="admin").one_or_none()
+        if admin:
+            click.secho(
+                f"a user with admin role already exists: {username}", fg="yellow"
+            )
+            return
+
+        auth.add_user(username, password, types.Role.ADMIN)
+
+        click.secho(
+            f"created admin user {username} successfully.",
+            fg="green",
+        )
