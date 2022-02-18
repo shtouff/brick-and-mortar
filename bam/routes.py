@@ -1,7 +1,8 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, make_response
 from flask_jwt_extended import jwt_required
 from webargs import fields
 from webargs.flaskparser import use_args, use_kwargs
+from werkzeug.exceptions import BadRequest
 
 from bam import types, auth, schemas
 from bam.crud import (
@@ -69,17 +70,27 @@ def register_routes(app: Flask):
             "limit": fields.Int(load_default=10),
             "episode": fields.Int(load_default=None),
             "character": fields.Int(load_default=None),
+            "format": fields.Str(load_default="json"),
         },
         location="querystring",
     )
     def get_comments(**kwargs):
         offset = kwargs.pop("offset")
         limit = kwargs.pop("limit")
+        format = kwargs.pop("format")
 
-        kwargs["episode_id"] = kwargs.pop("episode")
-        kwargs["character_id"] = kwargs.pop("character")
+        if format == "json":
+            kwargs["episode_id"] = kwargs.pop("episode")
+            kwargs["character_id"] = kwargs.pop("character")
 
-        return jsonify(crud_comment.list(offset, limit, **kwargs))
+            return jsonify(crud_comment.list(offset, limit, **kwargs))
+        elif format == "csv":
+            response = make_response(crud_comment.csv_export().getvalue())
+            response.headers.update({"Content-Type": "text/csv"})
+
+            return response
+        else:
+            raise BadRequest("unknown format")
 
     @app.route("/login", methods=["POST"])
     @use_kwargs(

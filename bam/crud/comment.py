@@ -1,5 +1,8 @@
+import csv
+from io import StringIO
 from typing import List
 
+from sqlalchemy import sql
 from webargs.flaskparser import abort
 from werkzeug.exceptions import NotFound
 
@@ -77,6 +80,20 @@ def list(offset: int, limit: int, **filters) -> List[types.Comment]:
         ],
         many=True,
     )
+
+
+def csv_export() -> StringIO:
+    """
+    Return an in-memory buffer containing the stream of CSV rows
+    """
+    rows = db.engine.connect().execute(sql.select([models.Comment]))
+    buffer = StringIO()
+    outcsv = csv.writer(buffer)
+
+    outcsv.writerow(rows.keys())
+    outcsv.writerows(rows)
+
+    return buffer
 
 
 def get(comment_id: int) -> types.Comment:
