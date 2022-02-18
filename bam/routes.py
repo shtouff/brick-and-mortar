@@ -17,11 +17,18 @@ def register_routes(app: Flask):
         {
             "offset": fields.Int(missing=0),
             "limit": fields.Int(missing=10),
+            "status": fields.Str(missing=None),
+            "gender": fields.Str(missing=None),
+            "species": fields.Str(missing=None),
+            "type": fields.Str(missing=None),
         },
         location="querystring",
     )
-    def get_characters(offset: int, limit: int):
-        return crud_character.list(offset, limit)
+    def get_characters(**kwargs):
+        offset = kwargs.pop("offset")
+        limit = kwargs.pop("limit")
+
+        return crud_character.list(offset, limit, **kwargs)
 
     @app.route("/api/episode")
     def get_episodes():
@@ -50,8 +57,16 @@ def register_routes(app: Flask):
         {
             "offset": fields.Int(missing=0),
             "limit": fields.Int(missing=10),
+            "episode": fields.Int(missing=None),
+            "character": fields.Int(missing=None),
         },
         location="querystring",
     )
-    def get_comments(offset: int, limit: int):
-        return crud_comment.list(offset, limit)
+    def get_comments(**kwargs):
+        offset = kwargs.pop("offset")
+        limit = kwargs.pop("limit")
+
+        kwargs["episode_id"] = kwargs.pop("episode")
+        kwargs["character_id"] = kwargs.pop("character")
+
+        return crud_comment.list(offset, limit, **kwargs)

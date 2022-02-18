@@ -15,13 +15,13 @@ def create(comment):
 
     episode = None
     if comment.episode:
-        episode = models.Episode.query.filter_by(id=comment.episode).one_or_none()
+        episode = models.Episode.query.get(comment.episode)
         if episode is None:
             abort(422, messages={"json": ["this episode does not exist."]})
 
     character = None
     if comment.character:
-        character = models.Character.query.filter_by(id=comment.character).one_or_none()
+        character = models.Character.query.get(comment.character)
         if character and episode and episode not in character.episode:
             abort(
                 422,
@@ -45,7 +45,7 @@ def create(comment):
 
 
 def update(comment_id, new_comment):
-    comment = models.Comment.query.filter_by(id=comment_id).one_or_none()
+    comment = models.Comment.query.get(comment_id)
     if comment is None:
         raise NotFound
 
@@ -58,7 +58,12 @@ def update(comment_id, new_comment):
     return jsonify(), 204
 
 
-def list(offset: int, limit: int):
+def list(offset: int, limit: int, **filters):
+    q = models.Comment.query
+    for k, v in filters.items():
+        if v:
+            q = q.filter(getattr(models.Comment, k) == v)
+
     return jsonify(
         [
             types.Comment(
@@ -68,15 +73,13 @@ def list(offset: int, limit: int):
                 episode=c.episode_id,
                 character=c.character_id,
             )
-            for c in models.Comment.query.order_by(models.Comment.id)
-            .offset(offset)
-            .limit(limit)
+            for c in q.order_by(models.Comment.id).offset(offset).limit(limit)
         ]
     )
 
 
 def get(comment_id):
-    comment = models.Comment.query.filter_by(id=comment_id).one_or_none()
+    comment = models.Comment.query.get(comment_id)
     if comment is None:
         raise NotFound
 
@@ -92,7 +95,7 @@ def get(comment_id):
 
 
 def delete(comment_id):
-    comment = models.Comment.query.filter_by(id=comment_id).one_or_none()
+    comment = models.Comment.query.get(comment_id)
     if comment is None:
         raise NotFound
 

@@ -224,6 +224,41 @@ def test_crud_comments_paginate(app):
     assert response.json[1]["id"] == 3
 
 
+def test_crud_comments_filter(app):
+    characters = [
+        models.Character(
+            id=i,
+            name=f"foo{i}",
+            status="foo",
+            species="foo",
+            gender="foo",
+            type="foo",
+        )
+        for i in range(2)
+    ]
+    comments = [
+        models.Comment(
+            id=i, title=f"foo{i}", comment="foo bar baz", character=characters[i]
+        )
+        for i in range(2)
+    ]
+    db.session.add_all([*characters, *comments])
+    db.session.commit()
+
+    with app.test_client() as client:
+        response = client.get(
+            "/api/comment",
+        )
+    assert response.status_code == 200
+    assert len(response.json) == 2  # no filtering
+
+    with app.test_client() as client:
+        response = client.get("/api/comment?character=1")
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["id"] == 1
+
+
 def test_crud_characters_paginate(app):
     characters = [
         models.Character(
@@ -254,3 +289,32 @@ def test_crud_characters_paginate(app):
     assert len(response.json) == 2
     assert response.json[0]["id"] == 2
     assert response.json[1]["id"] == 3
+
+
+def test_crud_characters_filter(app):
+    characters = [
+        models.Character(
+            id=i,
+            name=f"foo{i}",
+            status="foo",
+            species="foo",
+            gender=f"foo{i}",
+            type="foo",
+        )
+        for i in range(2)
+    ]
+    db.session.add_all(characters)
+    db.session.commit()
+
+    with app.test_client() as client:
+        response = client.get(
+            "/api/character",
+        )
+    assert response.status_code == 200
+    assert len(response.json) == 2  # no filtering
+
+    with app.test_client() as client:
+        response = client.get("/api/character?gender=foo1")
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["id"] == 1
