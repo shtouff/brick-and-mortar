@@ -1,10 +1,10 @@
 from datetime import date
 
-from bam import models
+from bam import models, types
 from bam.extensions import db
 
 
-def test_crud_comment_post_without_character_nor_episode(app):
+def test_crud_comment_post_without_character_nor_episode(app, token):
     with app.test_client() as client:
         response = client.post(
             "/api/comment",
@@ -12,12 +12,13 @@ def test_crud_comment_post_without_character_nor_episode(app):
                 "title": "foo",
                 "comment": "foo bar baz",
             },
+            headers={"Authorization": f"Bearer {token(types.Role.USER)}"},
         )
 
         assert response.status_code == 422
 
 
-def test_crud_comment_post_with_character(app):
+def test_crud_comment_post_with_character(app, token):
     data = {
         "title": "foo",
         "comment": "foo bar baz",
@@ -28,6 +29,7 @@ def test_crud_comment_post_with_character(app):
         response = client.post(
             "/api/comment",
             json=data,
+            headers={"Authorization": f"Bearer {token(types.Role.USER)}"},
         )
     assert response.status_code == 422
 
@@ -44,11 +46,12 @@ def test_crud_comment_post_with_character(app):
         response = client.post(
             "/api/comment",
             json=data,
+            headers={"Authorization": f"Bearer {token(types.Role.USER)}"},
         )
     assert response.status_code == 201
 
 
-def test_crud_comment_post_with_episode(app):
+def test_crud_comment_post_with_episode(app, token):
     data = {
         "title": "foo",
         "comment": "foo bar baz",
@@ -59,6 +62,7 @@ def test_crud_comment_post_with_episode(app):
         response = client.post(
             "/api/comment",
             json=data,
+            headers={"Authorization": f"Bearer {token(types.Role.USER)}"},
         )
     assert response.status_code == 422
 
@@ -73,11 +77,12 @@ def test_crud_comment_post_with_episode(app):
         response = client.post(
             "/api/comment",
             json=data,
+            headers={"Authorization": f"Bearer {token(types.Role.USER)}"},
         )
     assert response.status_code == 201
 
 
-def test_crud_comment_post_with_episode_and_character(app):
+def test_crud_comment_post_with_episode_and_character(app, token):
     data = {
         "title": "foo",
         "comment": "foo bar baz",
@@ -89,6 +94,7 @@ def test_crud_comment_post_with_episode_and_character(app):
         response = client.post(
             "/api/comment",
             json=data,
+            headers={"Authorization": f"Bearer {token(types.Role.USER)}"},
         )
     assert response.status_code == 422
 
@@ -105,6 +111,7 @@ def test_crud_comment_post_with_episode_and_character(app):
         response = client.post(
             "/api/comment",
             json=data,
+            headers={"Authorization": f"Bearer {token(types.Role.USER)}"},
         )
     assert response.status_code == 422  # episode and character aren't related
 
@@ -118,11 +125,12 @@ def test_crud_comment_post_with_episode_and_character(app):
         response = client.post(
             "/api/comment",
             json=data,
+            headers={"Authorization": f"Bearer {token(types.Role.USER)}"},
         )
     assert response.status_code == 201
 
 
-def test_crud_comment_patch_with_title(app):
+def test_crud_comment_patch_with_title(app, token):
     data = {
         "title": "bar",
     }
@@ -131,6 +139,7 @@ def test_crud_comment_patch_with_title(app):
         response = client.patch(
             "/api/comment/1",
             json=data,
+            headers={"Authorization": f"Bearer {token(types.Role.USER)}"},
         )
     assert response.status_code == 404
 
@@ -145,6 +154,7 @@ def test_crud_comment_patch_with_title(app):
         response = client.patch(
             "/api/comment/1",
             json=data,
+            headers={"Authorization": f"Bearer {token(types.Role.USER)}"},
         )
     assert response.status_code == 204
 
@@ -152,15 +162,17 @@ def test_crud_comment_patch_with_title(app):
         response = client.get(
             "/api/comment/1",
             json=data,
+            headers={"Authorization": f"Bearer {token(types.Role.USER)}"},
         )
     assert response.status_code == 200
     assert response.json["title"] == "bar"
 
 
-def test_crud_comment_delete(app):
+def test_crud_comment_delete(app, token):
     with app.test_client() as client:
         response = client.delete(
             "/api/comment/1",
+            headers={"Authorization": f"Bearer {token(types.Role.USER)}"},
         )
     assert response.status_code == 404
 
@@ -178,6 +190,7 @@ def test_crud_comment_delete(app):
     with app.test_client() as client:
         response = client.delete(
             "/api/comment/1",
+            headers={"Authorization": f"Bearer {token(types.Role.USER)}"},
         )
     assert response.status_code == 204
 
@@ -185,11 +198,12 @@ def test_crud_comment_delete(app):
     with app.test_client() as client:
         response = client.get(
             "/api/comment/1",
+            headers={"Authorization": f"Bearer {token(types.Role.USER)}"},
         )
     assert response.status_code == 404
 
 
-def test_crud_comments_paginate(app):
+def test_crud_comments_paginate(app, token):
     character = models.Character(
         id=1,
         name=f"foo",
@@ -210,6 +224,7 @@ def test_crud_comments_paginate(app):
     with app.test_client() as client:
         response = client.get(
             "/api/comment",
+            headers={"Authorization": f"Bearer {token(types.Role.USER)}"},
         )
     assert response.status_code == 200
     assert len(response.json) == 10  # no pagination asked, use defaults
@@ -217,6 +232,7 @@ def test_crud_comments_paginate(app):
     with app.test_client() as client:
         response = client.get(
             "/api/comment?offset=2&limit=2",
+            headers={"Authorization": f"Bearer {token(types.Role.USER)}"},
         )
     assert response.status_code == 200
     assert len(response.json) == 2
@@ -224,7 +240,7 @@ def test_crud_comments_paginate(app):
     assert response.json[1]["id"] == 3
 
 
-def test_crud_comments_filter(app):
+def test_crud_comments_filter(app, token):
     characters = [
         models.Character(
             id=i,
@@ -248,73 +264,16 @@ def test_crud_comments_filter(app):
     with app.test_client() as client:
         response = client.get(
             "/api/comment",
+            headers={"Authorization": f"Bearer {token(types.Role.USER)}"},
         )
     assert response.status_code == 200
     assert len(response.json) == 2  # no filtering
 
     with app.test_client() as client:
-        response = client.get("/api/comment?character=1")
-    assert response.status_code == 200
-    assert len(response.json) == 1
-    assert response.json[0]["id"] == 1
-
-
-def test_crud_characters_paginate(app):
-    characters = [
-        models.Character(
-            id=i,
-            name=f"foo{i}",
-            status="foo",
-            species="foo",
-            gender="foo",
-            type="foo",
-        )
-        for i in range(10)
-    ]
-    db.session.add_all(characters)
-    db.session.commit()
-
-    with app.test_client() as client:
         response = client.get(
-            "/api/character",
+            "/api/comment?character=1",
+            headers={"Authorization": f"Bearer {token(types.Role.USER)}"},
         )
-    assert response.status_code == 200
-    assert len(response.json) == 10
-
-    with app.test_client() as client:
-        response = client.get(
-            "/api/character?offset=2&limit=2",
-        )
-    assert response.status_code == 200
-    assert len(response.json) == 2
-    assert response.json[0]["id"] == 2
-    assert response.json[1]["id"] == 3
-
-
-def test_crud_characters_filter(app):
-    characters = [
-        models.Character(
-            id=i,
-            name=f"foo{i}",
-            status="foo",
-            species="foo",
-            gender=f"foo{i}",
-            type="foo",
-        )
-        for i in range(2)
-    ]
-    db.session.add_all(characters)
-    db.session.commit()
-
-    with app.test_client() as client:
-        response = client.get(
-            "/api/character",
-        )
-    assert response.status_code == 200
-    assert len(response.json) == 2  # no filtering
-
-    with app.test_client() as client:
-        response = client.get("/api/character?gender=foo1")
     assert response.status_code == 200
     assert len(response.json) == 1
     assert response.json[0]["id"] == 1

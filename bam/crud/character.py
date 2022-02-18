@@ -1,15 +1,15 @@
-from flask import jsonify
+from typing import List
 
-from bam import types, models
+from bam import types, models, schemas
 
 
-def list(offset: int, limit: int, **filters):
+def list(offset: int, limit: int, **filters) -> List[types.Character]:
     q = models.Character.query
     for k, v in filters.items():
         if v:
             q = q.filter(getattr(models.Character, k) == v)
 
-    return jsonify(
+    return schemas.Character.dump(
         [
             types.Character(
                 id=c.id,
@@ -21,5 +21,6 @@ def list(offset: int, limit: int, **filters):
                 episode=([e.id for e in c.episode]),
             )
             for c in q.order_by(models.Character.id).offset(offset).limit(limit)
-        ]
+        ],
+        many=True,
     )

@@ -1,10 +1,9 @@
 from flask import Flask, jsonify
-from flask_jwt_extended import jwt_required, get_jwt
-from marshmallow_dataclass import class_schema
+from flask_jwt_extended import jwt_required
 from webargs import fields
 from webargs.flaskparser import use_args, use_kwargs
 
-from bam import types, auth
+from bam import types, auth, schemas
 from bam.crud import (
     comment as crud_comment,
     episode as crud_episode,
@@ -15,6 +14,7 @@ from bam.crud import (
 
 def register_routes(app: Flask):
     @app.route("/api/character")
+    @jwt_required()
     @use_kwargs(
         {
             "offset": fields.Int(load_default=0),
@@ -30,31 +30,39 @@ def register_routes(app: Flask):
         offset = kwargs.pop("offset")
         limit = kwargs.pop("limit")
 
-        return crud_character.list(offset, limit, **kwargs)
+        return jsonify(crud_character.list(offset, limit, **kwargs))
 
     @app.route("/api/episode")
+    @jwt_required()
     def get_episodes():
-        return crud_episode.list()
+        return jsonify(crud_episode.list())
 
     @app.route("/api/comment", methods=["POST"])
-    @use_args(class_schema(types.Comment))
+    @jwt_required()
+    @use_args(schemas.Comment)
     def post_comment(comment):
-        return crud_comment.create(comment)
+        return jsonify(crud_comment.create(comment)), 201
 
     @app.route("/api/comment/<int:comment_id>", methods=["PATCH"])
-    @use_args(class_schema(types.CommentForUpdate))
-    def patch_comment(comment, comment_id):
-        return crud_comment.update(comment_id, comment)
+    @jwt_required()
+    @use_args(schemas.CommentForUpdate)
+    def patch_comment(comment: types.CommentForUpdate, comment_id: int):
+        crud_comment.update(comment_id, comment)
+        return jsonify(), 204
 
     @app.route("/api/comment/<int:comment_id>", methods=["GET"])
-    def get_comment(comment_id):
-        return crud_comment.get(comment_id)
+    @jwt_required()
+    def get_comment(comment_id: int):
+        return jsonify(crud_comment.get(comment_id))
 
     @app.route("/api/comment/<int:comment_id>", methods=["DELETE"])
-    def delete_comment(comment_id):
-        return crud_comment.delete(comment_id)
+    @jwt_required()
+    def delete_comment(comment_id: int):
+        crud_comment.delete(comment_id)
+        return jsonify(), 204
 
     @app.route("/api/comment")
+    @jwt_required()
     @use_kwargs(
         {
             "offset": fields.Int(load_default=0),
@@ -71,7 +79,7 @@ def register_routes(app: Flask):
         kwargs["episode_id"] = kwargs.pop("episode")
         kwargs["character_id"] = kwargs.pop("character")
 
-        return crud_comment.list(offset, limit, **kwargs)
+        return jsonify(crud_comment.list(offset, limit, **kwargs))
 
     @app.route("/login", methods=["POST"])
     @use_kwargs(
@@ -91,17 +99,20 @@ def register_routes(app: Flask):
 
     @app.route("/api/user", methods=["POST"])
     @jwt_required()
-    @use_args(class_schema(types.UserAccount))
+    @auth.require_role(types.Role.ADMIN)
+    @use_args(schemas.UserAccount)
     def post_user(user):
         return jsonify(crud_useraccount.create(user)), 201
 
     @app.route("/api/user/<int:user_id>", methods=["GET"])
     @jwt_required()
-    def get_user(user_id):
+    @auth.require_role(types.Role.ADMIN)
+    def get_user(user_id: int):
         return crud_useraccount.get(user_id)
 
     @app.route("/api/user/<int:user_id>", methods=["DELETE"])
     @jwt_required()
+    @auth.require_role(types.Role.ADMIN)
     def delete_user(user_id):
         crud_useraccount.delete(user_id)
         return jsonify(None), 204

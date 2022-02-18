@@ -1,12 +1,13 @@
-from flask import jsonify
+from typing import List
+
 from webargs.flaskparser import abort
 from werkzeug.exceptions import NotFound
 
-from bam import types, models
+from bam import types, models, schemas
 from bam.extensions import db
 
 
-def create(comment):
+def create(comment) -> types.Comment:
     if comment.episode is None and comment.character is None:
         abort(
             422,
@@ -41,7 +42,7 @@ def create(comment):
     db.session.commit()
 
     comment.id = dao.id
-    return jsonify(comment), 201
+    return comment
 
 
 def update(comment_id, new_comment):
@@ -55,16 +56,15 @@ def update(comment_id, new_comment):
         comment.comment = new_comment.comment
 
     db.session.commit()
-    return jsonify(), 204
 
 
-def list(offset: int, limit: int, **filters):
+def list(offset: int, limit: int, **filters) -> List[types.Comment]:
     q = models.Comment.query
     for k, v in filters.items():
         if v:
             q = q.filter(getattr(models.Comment, k) == v)
 
-    return jsonify(
+    return schemas.Comment.dump(
         [
             types.Comment(
                 id=c.id,
@@ -74,16 +74,17 @@ def list(offset: int, limit: int, **filters):
                 character=c.character_id,
             )
             for c in q.order_by(models.Comment.id).offset(offset).limit(limit)
-        ]
+        ],
+        many=True,
     )
 
 
-def get(comment_id):
+def get(comment_id: int) -> types.Comment:
     comment = models.Comment.query.get(comment_id)
     if comment is None:
         raise NotFound
 
-    return jsonify(
+    return schemas.Comment.dump(
         types.Comment(
             id=comment.id,
             title=comment.title,
@@ -101,4 +102,3 @@ def delete(comment_id):
 
     db.session.delete(comment)
     db.session.commit()
-    return jsonify(), 204

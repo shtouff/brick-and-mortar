@@ -1,10 +1,10 @@
-from flask import jsonify
+from typing import List
 
-from bam import types, models
+from bam import types, models, schemas
 
 
-def list():
-    return jsonify(
+def list() -> List[types.Episode]:
+    return schemas.Episode.dump(
         [
             types.Episode(
                 id=e.id,
@@ -14,5 +14,6 @@ def list():
                 characters=([c.id for c in e.characters]),
             )
             for e in models.Episode.query.all()
-        ]
+        ],
+        many=True,
     )

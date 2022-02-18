@@ -1,24 +1,23 @@
 from typing import List
 
-from marshmallow_dataclass import class_schema
 from werkzeug.exceptions import Conflict, NotFound
 
-from bam import models, types, auth
+from bam import models, types, auth, schemas
 from bam.extensions import db
 
-schema = class_schema(types.UserAccount)()
 
-
-def create(user: types.UserAccount) -> dict:
+def create(user: types.UserAccount) -> types.UserAccount:
     dao = models.UserAccount.query.filter_by(username=user.username)
     if dao:
         raise Conflict
 
-    return schema.dump(auth.add_user(user.username, user.password, user.role))
+    return schemas.UserAccount.dump(
+        auth.add_user(user.username, user.password, user.role)
+    )
 
 
-def list() -> List[dict]:
-    return schema.dump(
+def list() -> List[types.UserAccount]:
+    return schemas.UserAccount.dump(
         [
             types.UserAccount(
                 id=u.id,
@@ -32,12 +31,12 @@ def list() -> List[dict]:
     )
 
 
-def get(user_id) -> dict:
+def get(user_id) -> types.UserAccount:
     user = models.UserAccount.query.get(user_id)
     if user is None:
         raise NotFound
 
-    return schema.dump(
+    return schemas.UserAccount.dump(
         types.UserAccount(
             id=user.id,
             username=user.username,

@@ -1,4 +1,5 @@
 import pytest
+from flask_jwt_extended import create_access_token
 from marshmallow_dataclass import class_schema
 
 from app import create_app
@@ -25,3 +26,16 @@ def app():
         db.create_all()
         yield app
         db.session.remove()
+
+
+@pytest.fixture(scope="session")
+def token():
+
+    # need a callback, otherwise we're not in the app context
+    def callback(role: types.Role):
+        additional_claims = {"role": role.value}
+        return create_access_token(
+            identity=role.value.lower(), additional_claims=additional_claims
+        )
+
+    return callback
