@@ -10,5 +10,24 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql:delegated
     hostname: postgresql
+  bam:
+    build:
+      context: ./
+      target: bam
+    image: bam
+    depends_on:
+      - postgresql
+    ports:
+      - "5000:5000"
+    environment:
+      SQLALCHEMY_DATABASE_URI: "postgresql://postgres:postgres@postgresql/bam"
+    hostname: bam
+  bam-dev:
+    build:
+      context: ./
+      target: bam-dev
+    image: bam-dev
+    profiles: ["tests"]
+
 volumes:
   pg_data:

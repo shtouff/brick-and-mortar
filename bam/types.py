@@ -1,7 +1,7 @@
 import enum
 from dataclasses import dataclass, field
 from datetime import datetime, date
-from typing import List, Optional
+from typing import List, Optional, Any
 
 from marshmallow import fields
 from marshmallow_dataclass import NewType
@@ -12,7 +12,7 @@ class AirDateField(fields.Field):
         return datetime.strptime(data[attr], "%B %d, %Y").date()
 
 
-AirDate = NewType("WeirdDate", date, field=AirDateField)
+AirDate: Any = NewType("WeirdDate", date, field=AirDateField)
 
 
 @dataclass
