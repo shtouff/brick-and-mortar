@@ -122,13 +122,13 @@ def test_crud_comment_post_with_episode_and_character(app):
     assert response.status_code == 201
 
 
-def test_crud_comment_put_with_title(app):
+def test_crud_comment_patch_with_title(app):
     data = {
         "title": "bar",
     }
 
     with app.test_client() as client:
-        response = client.put(
+        response = client.patch(
             "/api/comment/1",
             json=data,
         )
@@ -142,7 +142,7 @@ def test_crud_comment_put_with_title(app):
 
     # retry
     with app.test_client() as client:
-        response = client.put(
+        response = client.patch(
             "/api/comment/1",
             json=data,
         )
