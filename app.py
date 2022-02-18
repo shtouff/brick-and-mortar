@@ -1,8 +1,10 @@
 import os
 
-from flask import Flask
+from flask import Flask, jsonify
+from werkzeug.exceptions import HTTPException
 
 from bam.commands import register_commands
+from bam.errorhandlers import register_errorhandlers
 from bam.extensions import db, migrate
 from bam.routes import register_routes
 
@@ -31,6 +33,7 @@ def create_app() -> Flask:
 
     register_routes(app)
     register_commands(app)
+    register_errorhandlers(app)
 
     return app
 

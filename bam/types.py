@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime, date
-from typing import List
+from typing import List, Optional
 
 from marshmallow import fields
 from marshmallow_dataclass import NewType
@@ -32,3 +32,18 @@ class Character:
     type: str
     gender: str
     episode: List[int] = field(default_factory=list)
+
+
+@dataclass
+class Comment:
+    title: str
+    comment: str
+    id: Optional[int] = None
+    episode: Optional[int] = None
+    character: Optional[int] = None
+
+
+@dataclass
+class CommentForUpdate:
+    title: Optional[str] = None
+    comment: Optional[str] = None
