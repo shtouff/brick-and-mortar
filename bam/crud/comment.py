@@ -21,7 +21,7 @@ def create(comment):
 
     character = None
     if comment.character:
-        character = models.Character.query.filter_by(id=comment.character).one()
+        character = models.Character.query.filter_by(id=comment.character).one_or_none()
         if character and episode and episode not in character.episode:
             abort(
                 422,
