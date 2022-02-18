@@ -31,3 +31,14 @@ class Character(db.Model):
     episode = db.relationship(
         "Episode", secondary=association_table, back_populates="characters"
     )
+
+
+class Comment(db.Model):
+    __tablename__ = "comment"
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String, nullable=False)
+    comment = db.Column(db.String, nullable=False)
+    episode_id = db.Column(db.Integer, db.ForeignKey("episode.id"))
+    episode = db.relationship("Episode")
+    character_id = db.Column(db.Integer, db.ForeignKey("character.id"))
+    character = db.relationship("Character")
