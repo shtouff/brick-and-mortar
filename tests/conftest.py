@@ -1,20 +1,9 @@
 import pytest
 from flask_jwt_extended import create_access_token
-from marshmallow_dataclass import class_schema
 
 from app import create_app
 from bam import types
 from bam.extensions import db
-
-
-@pytest.fixture(scope="session")
-def episode_schema():
-    return class_schema(types.Episode)()
-
-
-@pytest.fixture(scope="session")
-def character_schema():
-    return class_schema(types.Character)()
 
 
 @pytest.fixture(scope="function")
