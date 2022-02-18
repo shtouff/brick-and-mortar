@@ -187,3 +187,70 @@ def test_crud_comment_delete(app):
             "/api/comment/1",
         )
     assert response.status_code == 404
+
+
+def test_crud_comments_paginate(app):
+    character = models.Character(
+        id=1,
+        name=f"foo",
+        status="foo",
+        species="foo",
+        gender="foo",
+        type="foo",
+    )
+    comments = [
+        models.Comment(
+            id=i, title=f"foo{i}", comment="foo bar baz", character=character
+        )
+        for i in range(10)
+    ]
+    db.session.add_all([character, *comments])
+    db.session.commit()
+
+    with app.test_client() as client:
+        response = client.get(
+            "/api/comment",
+        )
+    assert response.status_code == 200
+    assert len(response.json) == 10  # no pagination asked, use defaults
+
+    with app.test_client() as client:
+        response = client.get(
+            "/api/comment?offset=2&limit=2",
+        )
+    assert response.status_code == 200
+    assert len(response.json) == 2
+    assert response.json[0]["id"] == 2
+    assert response.json[1]["id"] == 3
+
+
+def test_crud_characters_paginate(app):
+    characters = [
+        models.Character(
+            id=i,
+            name=f"foo{i}",
+            status="foo",
+            species="foo",
+            gender="foo",
+            type="foo",
+        )
+        for i in range(10)
+    ]
+    db.session.add_all(characters)
+    db.session.commit()
+
+    with app.test_client() as client:
+        response = client.get(
+            "/api/character",
+        )
+    assert response.status_code == 200
+    assert len(response.json) == 10
+
+    with app.test_client() as client:
+        response = client.get(
+            "/api/character?offset=2&limit=2",
+        )
+    assert response.status_code == 200
+    assert len(response.json) == 2
+    assert response.json[0]["id"] == 2
+    assert response.json[1]["id"] == 3

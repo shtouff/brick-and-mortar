@@ -3,7 +3,7 @@ from flask import jsonify
 from bam import types, models
 
 
-def list():
+def list(offset: int, limit: int):
     return jsonify(
         [
             types.Character(
@@ -15,6 +15,8 @@ def list():
                 gender=c.gender,
                 episode=([e.id for e in c.episode]),
             )
-            for c in models.Character.query.all()
+            for c in models.Character.query.order_by(models.Character.id)
+            .offset(offset)
+            .limit(limit)
         ]
     )

@@ -1,6 +1,7 @@
 from flask import Flask
 from marshmallow_dataclass import class_schema
-from webargs.flaskparser import use_args
+from webargs import fields
+from webargs.flaskparser import use_args, use_kwargs
 
 from bam import types
 from bam.crud import (
@@ -12,8 +13,15 @@ from bam.crud import (
 
 def register_routes(app: Flask):
     @app.route("/api/character")
-    def get_characters():
-        return crud_character.list()
+    @use_kwargs(
+        {
+            "offset": fields.Int(missing=0),
+            "limit": fields.Int(missing=10),
+        },
+        location="querystring",
+    )
+    def get_characters(offset: int, limit: int):
+        return crud_character.list(offset, limit)
 
     @app.route("/api/episode")
     def get_episodes():
@@ -38,5 +46,12 @@ def register_routes(app: Flask):
         return crud_comment.delete(comment_id)
 
     @app.route("/api/comment")
-    def get_comments():
-        return crud_comment.list()
+    @use_kwargs(
+        {
+            "offset": fields.Int(missing=0),
+            "limit": fields.Int(missing=10),
+        },
+        location="querystring",
+    )
+    def get_comments(offset: int, limit: int):
+        return crud_comment.list(offset, limit)

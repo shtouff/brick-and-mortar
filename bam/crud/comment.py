@@ -58,7 +58,7 @@ def update(comment_id, new_comment):
     return jsonify(), 204
 
 
-def list():
+def list(offset: int, limit: int):
     return jsonify(
         [
             types.Comment(
@@ -68,7 +68,9 @@ def list():
                 episode=c.episode_id,
                 character=c.character_id,
             )
-            for c in models.Comment.query.all()
+            for c in models.Comment.query.order_by(models.Comment.id)
+            .offset(offset)
+            .limit(limit)
         ]
     )
 
